@@ -1,0 +1,244 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Cleaned customer data from the raw customers table.
+
+    columns:
+      - name: customer_id
+        description: Primary key for a customer.
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_unique_id
+        description: Stable customer identifier across multiple orders.
+        tests:
+          - not_null
+
+      - name: zip_code_prefix
+        description: Customer ZIP code prefix.
+
+      - name: city
+        description: Customer city.
+
+      - name: state
+        description: Customer state abbreviation.
+
+  - name: stg_orders
+    description: Cleaned order data from the raw orders table.
+
+    columns:
+      - name: order_id
+        description: Primary key for each order.
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Customer who placed the order.
+        tests:
+          - not_null
+
+      - name: order_status
+        description: Current status of the order.
+        tests:
+          - not_null
+
+      - name: order_purchase_timestamp
+        description: Timestamp when the customer placed the order.
+
+      - name: order_approved_at
+        description: Timestamp when the order was approved.
+
+      - name: order_delivered_carrier_date
+        description: Timestamp when the order was handed over to the carrier.
+
+      - name: order_delivered_customer_date
+        description: Timestamp when the order was delivered to the customer.
+
+      - name: order_estimated_delivery_date
+        description: Estimated delivery date promised to the customer.
+
+  - name: stg_order_items
+    description: Cleaned order item data with one record per purchased product.
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - order_id
+              - order_item_id
+
+    columns:
+      - name: order_id
+        description: Unique identifier of an order.
+        tests:
+          - not_null
+
+      - name: order_item_id
+        description: Sequential item number within an order.
+        tests:
+          - not_null
+
+      - name: product_id
+        description: Product purchased in the order.
+        tests:
+          - not_null
+
+      - name: seller_id
+        description: Seller fulfilling the order.
+        tests:
+          - not_null
+
+      - name: shipping_limit_date
+        description: Shipping deadline for the seller.
+
+      - name: price
+        description: Price paid for the product.
+        tests:
+          - not_null
+
+      - name: freight_value
+        description: Shipping cost charged for the item.
+        tests:
+          - not_null
+
+  - name: stg_products
+    description: Cleaned product master data.
+
+    columns:
+      - name: product_id
+        description: Unique identifier of the product.
+        tests:
+          - unique
+          - not_null
+
+      - name: product_category_name
+        description: Product category name in Portuguese.
+
+      - name: product_name_length
+        description: Length of the product name.
+
+      - name: product_description_length
+        description: Length of the product description.
+
+      - name: product_photos_qty
+        description: Number of product photos.
+
+      - name: product_weight_g
+        description: Product weight in grams.
+
+      - name: product_length_cm
+        description: Product length in centimeters.
+
+      - name: product_height_cm
+        description: Product height in centimeters.
+
+      - name: product_width_cm
+        description: Product width in centimeters.
+
+  - name: stg_reviews
+    description: Cleaned customer review data.
+
+    columns:
+      - name: review_id
+        description: Unique identifier of the review.
+        tests:
+          - not_null
+
+      - name: order_id
+        description: Order associated with the review.
+
+      - name: review_score
+        description: Customer rating ranging from 1 (lowest) to 5 (highest).
+        tests:
+          - not_null
+
+      - name: review_comment_title
+        description: Title provided by the customer for the review.
+
+      - name: review_comment_message
+        description: Customer review comments.
+
+      - name: review_creation_date
+        description: Date when the review was created.
+
+      - name: review_answer_timestamp
+        description: Timestamp when the review was answered.
+
+  - name: stg_payments
+    description: Cleaned payment transaction data.
+
+    columns:
+      - name: order_id
+        description: Order associated with the payment.
+        tests:
+          - not_null
+
+      - name: payment_sequential
+        description: Sequence number of the payment for an order.
+
+      - name: payment_type
+        description: Payment method used by the customer.
+        tests:
+          - not_null
+
+      - name: payment_installments
+        description: Number of installments used for payment.
+
+      - name: payment_value
+        description: Total payment amount for the transaction.
+        tests:
+          - not_null
+
+  - name: stg_sellers
+    description: Cleaned seller master data.
+
+    columns:
+      - name: seller_id
+        description: Unique identifier of the seller.
+        tests:
+          - unique
+          - not_null
+
+      - name: zip_code_prefix
+        description: Seller ZIP code prefix.
+
+      - name: city
+        description: Seller city.
+
+      - name: state
+        description: Seller state abbreviation.
+
+  - name: stg_category_translations
+    description: Mapping between Portuguese and English product category names.
+
+    columns:
+      - name: product_category_name
+        description: Product category name in Portuguese.
+        tests:
+          - unique
+          - not_null
+
+      - name: product_category_name_english
+        description: English translation of the product category.
+
+  - name: stg_geolocations
+    description: Cleaned geolocation reference data for Brazilian ZIP code prefixes.
+
+    columns:
+      - name: zip_code_prefix
+        description: ZIP code prefix.
+
+      - name: latitude
+        description: Latitude coordinate.
+
+      - name: longitude
+        description: Longitude coordinate.
+
+      - name: city
+        description: City corresponding to the ZIP code.
+
+      - name: state
+        description: State corresponding to the ZIP code.

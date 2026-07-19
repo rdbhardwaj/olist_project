@@ -43,3 +43,7 @@ models:
     marts:
       +materialized: table
       +schema: analytics_marts
+seeds:
+  Olist_Project:
+    +schema: seed_data
+    +quote_columns: false

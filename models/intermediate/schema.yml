@@ -1,0 +1,127 @@
+version: 2
+
+models:
+  - name: int_order_details
+    description: >
+      Intermediate model containing one record per purchased order item.
+      Combines order item information with product and seller details,
+      serving as the foundation for downstream fact tables.
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - order_id
+              - order_item_id
+
+    columns:
+      - name: order_id
+        description: Unique identifier of the order.
+        tests:
+          - not_null
+
+      - name: order_item_id
+        description: Sequential line item number within an order.
+        tests:
+          - not_null
+
+      - name: product_id
+        description: Product purchased in the order.
+
+      - name: seller_id
+        description: Seller responsible for fulfilling the order.
+
+      - name: shipping_limit_date
+        description: Deadline by which the seller should ship the product.
+
+      - name: price
+        description: Price paid for the purchased product.
+
+      - name: freight_value
+        description: Shipping cost charged for the purchased item.
+
+  - name: int_customer_orders
+    description: >
+      Intermediate model containing one record per order enriched with
+      customer information and key order lifecycle timestamps. Used as
+      the primary order-level dataset for downstream marts.
+
+    columns:
+      - name: order_id
+        description: Unique identifier of the order.
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+        description: Customer who placed the order.
+        tests:
+          - not_null
+
+      - name: customer_unique_id
+        description: Stable customer identifier across multiple orders.
+
+      - name: city
+        description: City where the customer resides.
+
+      - name: state
+        description: State abbreviation where the customer resides.
+
+      - name: status
+        description: Current lifecycle status of the order.
+
+      - name: purchase_timestamp
+        description: Timestamp when the customer placed the order.
+
+      - name: approved_at
+        description: Timestamp when the order was approved.
+
+      - name: delivered_carrier_date
+        description: Timestamp when the order was handed over to the carrier.
+
+      - name: delivered_customer_date
+        description: Timestamp when the order was delivered to the customer.
+
+      - name: estimated_delivery_date
+        description: Estimated delivery date promised to the customer.
+
+  - name: int_payments_summary
+    description: >
+      Intermediate model that aggregates payment information at the
+      order level. Each record represents a single order with summarized
+      payment metrics.
+
+    columns:
+      - name: order_id
+        description: Unique identifier of the order.
+        tests:
+          - unique
+          - not_null
+
+      - name: total_payment
+        description: Total amount paid across all payment transactions for the order.
+
+      - name: payment_count
+        description: Number of payment transactions associated with the order.
+
+      - name: max_installments
+        description: Maximum number of installments used across all payments for the order.
+
+  - name: int_reviews_summary
+    description: >
+      Intermediate model that aggregates customer review information at
+      the order level. Each record represents a single order with
+      summarized review metrics.
+
+    columns:
+      - name: order_id
+        description: Unique identifier of the order.
+        tests:
+          - unique
+          - not_null
+
+      - name: avg_review_score
+        description: Average customer review score for the order.
+
+      - name: review_count
+        description: Total number of reviews submitted for the order.

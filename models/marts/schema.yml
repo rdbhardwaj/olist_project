@@ -1,0 +1,170 @@
+version: 2
+
+models:
+
+  - name: dim_customers
+    description: >
+      Customer dimension containing one record per customer.
+      Stores customer identifiers and geographic information for
+      customer-level analysis and reporting.
+
+    columns:
+      - name: customer_id
+        description: Unique identifier for a customer.
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_unique_id
+        description: Stable customer identifier shared across multiple orders.
+        tests:
+          - not_null
+
+      - name: customer_city
+        description: City where the customer is located.
+
+      - name: customer_state
+        description: State abbreviation where the customer resides.
+
+      - name: region
+        description: Geographic region derived from the customer state using the state_regions seed.
+
+  - name: dim_products
+    description: >
+      Product dimension containing product attributes enriched with
+      translated category names and business-friendly category groups.
+
+    columns:
+      - name: product_id
+        description: Unique identifier for a product.
+        tests:
+          - unique
+          - not_null
+
+      - name: product_category_name
+        description: Original product category name in Portuguese.
+        tests:
+          - not_null
+
+      - name: product_category_name_english
+        description: English translation of the product category.
+
+      - name: category_group
+        description: High-level business category assigned using the category_groups seed.
+
+      - name: product_weight_g
+        description: Product weight measured in grams.
+
+      - name: product_length_cm
+        description: Product length in centimeters.
+
+      - name: product_height_cm
+        description: Product height in centimeters.
+
+      - name: product_width_cm
+        description: Product width in centimeters.
+
+  - name: dim_sellers
+    description: >
+      Seller dimension containing one record per seller along with
+      geographic information used for seller performance analysis.
+
+    columns:
+      - name: seller_id
+        description: Unique identifier for a seller.
+        tests:
+          - unique
+          - not_null
+
+      - name: seller_city
+        description: City where the seller is located.
+        tests:
+          - not_null
+
+      - name: seller_state
+        description: State abbreviation where the seller operates.
+        tests:
+          - not_null
+
+      - name: region
+        description: Geographic region derived from the seller state.
+
+  - name: fact_orders
+    description: >
+      Central fact table containing one record per purchased order item.
+      Combines customer, seller, product, payment, review and order
+      information to support analytical reporting and business intelligence.
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - order_id
+              - order_item_id
+
+    columns:
+      - name: order_id
+        description: Unique identifier of the order.
+        tests:
+          - not_null
+
+      - name: order_item_id
+        description: Sequential line item number within an order.
+        tests:
+          - not_null
+
+      - name: customer_id
+        description: Customer who placed the order.
+        tests:
+          - not_null
+
+      - name: product_id
+        description: Product purchased in the order.
+        tests:
+          - not_null
+
+      - name: seller_id
+        description: Seller responsible for fulfilling the order.
+        tests:
+          - not_null
+
+      - name: order_status
+        description: Current lifecycle status of the order.
+
+      - name: purchase_timestamp
+        description: Timestamp when the customer completed the purchase.
+
+      - name: delivered_customer_date
+        description: Timestamp when the order was delivered to the customer.
+
+      - name: estimated_delivery_date
+        description: Estimated delivery date communicated to the customer.
+
+      - name: price
+        description: Price paid for the purchased product, excluding shipping charges.
+        tests:
+          - not_null
+          - positive_values
+          - non_zero
+
+      - name: freight_value
+        description: Shipping cost associated with the purchased item.
+
+      - name: total_payment
+        description: Total amount paid by the customer for the order across all payment transactions.
+        tests:
+          - non_zero
+          - positive_values
+
+      - name: payment_count
+        description: Number of payment transactions recorded for the order.
+
+      - name: max_installments
+        description: Maximum number of payment installments used for the order.
+
+      - name: avg_review_score
+        description: Average customer review score for the order, ranging from 1 to 5.
+        tests:
+          - value_between:
+              min_value: 1
+              max_value: 5
