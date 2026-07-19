@@ -22,3 +22,4 @@ myvenv/
 
 # dbt profiles
 profiles.yml
+dbt_internal_packages/
