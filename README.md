@@ -119,6 +119,7 @@ Olist_Project/
 - Customer Orders
 - Order Details
 - Payment Summary
+- Review Summary
 
 ### Mart
 
