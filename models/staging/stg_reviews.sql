@@ -1,4 +1,8 @@
-{{ config(materialized='view') }}
+{{ config(
+    materialized='incremental',
+    unique_key='review_id',
+    incremental_strategy='delete+insert'
+) }}
 
 select
 
@@ -11,3 +15,12 @@ select
     review_answer_timestamp
 
 from {{ source('raw','reviews') }}
+
+{% if is_incremental() %}
+
+where review_id not in (
+    select review_id
+    from {{ this }}
+)
+
+{% endif %}

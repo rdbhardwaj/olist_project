@@ -1,6 +1,7 @@
 {{ config(
     materialized='incremental',
-    unique_key='seller_id'
+    unique_key='seller_id',
+    incremental_strategy='delete+insert'
 ) }}
 
 select

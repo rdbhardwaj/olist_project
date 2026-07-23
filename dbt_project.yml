@@ -33,7 +33,7 @@ models:
   Olist_Project:
 
     staging:
-      +materialized: view
+      +materialized: incremental
       +schema: staging
 
     intermediate:

@@ -1,4 +1,8 @@
-{{ config(materialized='view') }}
+{{ config(
+    materialized='incremental',
+    unique_key='product_id',
+    incremental_strategy='delete+insert'
+) }}
 
 select
 
@@ -13,3 +17,12 @@ select
     product_width_cm
 
 from {{ source('raw','products') }}
+
+{% if is_incremental() %}
+
+where product_id not in (
+    select product_id
+    from {{ this }}
+)
+
+{% endif %}
